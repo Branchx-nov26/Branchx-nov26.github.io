@@ -1,0 +1,1260 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Cabang Task Management</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;transition:background-color .2s ease,border-color .2s ease,color .2s ease,box-shadow .2s ease,transform .15s ease,filter .2s ease}
+button:hover{filter:brightness(.95)}
+button:active{transform:scale(.97)}
+input{transition:border-color .2s ease,box-shadow .2s ease}
+input:focus{border-color:#0B4DA2;box-shadow:0 0 0 3px rgba(11,77,162,.14)}
+button:focus-visible,input:focus-visible{outline:2px solid #0B4DA2;outline-offset:2px}
+.lift{transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+.lift:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(16,24,40,.10);border-color:#CBD5E5}
+.view{animation:fadeUp .45s cubic-bezier(.2,.7,.2,1) both}
+.pop{animation:pop .32s cubic-bezier(.2,.8,.2,1) both}
+.bar{animation:grow 1s cubic-bezier(.2,.8,.2,1) both;transition:width .7s cubic-bezier(.2,.8,.2,1),background-color .4s ease}
+.ring{animation:ringIn 1.1s cubic-bezier(.2,.8,.2,1) both;transition:stroke-dasharray .8s cubic-bezier(.2,.8,.2,1)}
+.draw{animation:draw 1.2s ease-out both}
+.slideIn{animation:slideIn .55s cubic-bezier(.2,.8,.2,1) both}
+.fabIn{animation:fabIn .4s cubic-bezier(.2,.8,.2,1) both}
+.ping{animation:ping 2.4s ease-out infinite}
+@keyframes slideIn{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes fabIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(245,168,0,.55)}70%,100%{box-shadow:0 0 0 10px rgba(245,168,0,0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+@keyframes grow{from{width:0}}
+@keyframes ringIn{from{stroke-dasharray:0 403}}
+@keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="display:flex;flex-wrap:wrap;align-items:stretch;min-height:1180px;background:#F4F6FB;font-family:Inter,system-ui,sans-serif;color:#101828">
+
+  <!-- SIDEBAR -->
+  <aside style="flex:1 1 244px;max-width:272px;background:#FFFFFF;border-right:1px solid #E4E9F2;padding:24px 16px;display:flex;flex-direction:column;gap:28px;box-sizing:border-box">
+    <div style="display:flex;align-items:center;gap:12px;padding:0 6px">
+      <div style="width:42px;height:42px;border-radius:12px;background:#0B4DA2;display:flex;align-items:center;justify-content:center;flex:0 0 auto">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-6 9 6"></path><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"></path><path d="M3 20h18"></path></svg>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+        <span style="font-size:15px;font-weight:700;line-height:1.25">Cabang Task Management</span>
+        <span style="font-size:12px;color:#667085">Cabang Tomang</span>
+      </div>
+    </div>
+
+    <nav aria-label="Menu utama" style="display:flex;flex-direction:column;gap:6px">
+      <button onClick="{{goTask}}" style="{{navTaskStyle}}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l2 2 3-3"></path><path d="M3 13l2 2 3-3"></path><path d="M11 7h10M11 14h10M11 20h10"></path></svg>
+        <span style="flex:1;text-align:left">Task Management</span>
+        <sc-if value="{{hasOverdue}}" hint-placeholder-val="{{true}}">
+          <span class="pop" style="min-width:22px;height:22px;border-radius:11px;background:#D92D20;color:#FFFFFF;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 6px;box-sizing:border-box">{{overdueCount}}</span>
+        </sc-if>
+      </button>
+      <button onClick="{{goDash}}" style="{{navDashStyle}}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"></path><path d="M7 15l4-4 3 3 5-6"></path></svg>
+        <span style="flex:1;text-align:left">Dashboard Target</span>
+      </button>
+      <button onClick="{{goProd}}" style="{{navProdStyle}}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5z"></path><path d="M4 19a2 2 0 0 1 2-2h13"></path><path d="M9 8h6"></path></svg>
+        <span style="flex:1;text-align:left">Product Knowledge</span>
+      </button>
+    </nav>
+
+    <div style="margin-top:auto;display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:#F4F6FB">
+      <span style="width:38px;height:38px;border-radius:19px;background:#0B4DA2;color:#FFFFFF;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto">AC</span>
+      <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+        <span style="font-size:14px;font-weight:600">Admin Cabang</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#667085"><span style="width:7px;height:7px;border-radius:4px;background:#12B76A"></span>Aktif</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main style="flex:999 1 560px;min-width:0;padding:28px 32px 40px;box-sizing:border-box;display:flex;flex-direction:column;gap:22px">
+
+    <!-- ============ TASK VIEW ============ -->
+    <sc-if value="{{isTask}}" hint-placeholder-val="{{true}}">
+    <div class="view" style="display:flex;flex-direction:column;gap:22px">
+
+      <header style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <h1 style="margin:0;font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.2">Task Management</h1>
+          <span style="font-size:14px;color:#667085;font-weight:500">Senin, 9 November 2026</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+          <div style="position:relative;display:flex;align-items:center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="position:absolute;left:14px"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+            <input type="text" value="{{q}}" onInput="{{onQ}}" placeholder="Cari tugas, nasabah, petugas" aria-label="Cari tugas" style="min-height:44px;width:280px;max-width:100%;border:1px solid #D0D5DD;border-radius:12px;padding:0 14px 0 40px;font-family:inherit;font-size:14px;color:#101828;background:#FFFFFF;box-sizing:border-box">
+          </div>
+          <button onClick="{{toggleForm}}" style="min-height:44px;padding:0 18px;border-radius:12px;border:none;background:#0B4DA2;color:#FFFFFF;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:8px;box-shadow:0 1px 2px rgba(16,24,40,.12)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+            Tugas baru
+          </button>
+        </div>
+      </header>
+
+      <!-- Form tugas baru -->
+      <sc-if value="{{showForm}}" hint-placeholder-val="{{false}}">
+      <section class="pop" aria-label="Tugas baru" style="background:#FFFFFF;border:1px solid #E4E9F2;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:16px;box-shadow:0 1px 2px rgba(16,24,40,.05)">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label for="judul" style="font-size:13px;font-weight:600;color:#344054">Nama tugas</label>
+          <input id="judul" type="text" value="{{newTitle}}" onInput="{{onTitle}}" placeholder="Contoh: Follow up pembukaan rekening payroll" style="min-height:44px;border:1px solid #D0D5DD;border-radius:12px;padding:0 14px;font-family:inherit;font-size:14px;color:#101828;background:#FFFFFF;box-sizing:border-box;width:100%">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:20px 28px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:13px;font-weight:600;color:#344054">Prioritas</span>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{newPrioChips}}" as="c" hint-placeholder-count="3">
+                <button onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:13px;font-weight:600;color:#344054">Jadwal</span>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{newDueChips}}" as="c" hint-placeholder-count="3">
+                <button onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:13px;font-weight:600;color:#344054">Petugas</span>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{newWhoChips}}" as="c" hint-placeholder-count="6">
+                <button onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+          <button onClick="{{addTask}}" style="min-height:44px;padding:0 22px;border-radius:12px;border:none;background:#0B4DA2;color:#FFFFFF;font-size:14px;font-weight:600">Simpan</button>
+          <button onClick="{{toggleForm}}" style="min-height:44px;padding:0 20px;border-radius:12px;border:1px solid #D0D5DD;background:#FFFFFF;color:#344054;font-size:14px;font-weight:600">Batal</button>
+          <sc-if value="{{hasFormMsg}}" hint-placeholder-val="{{false}}">
+            <span class="pop" style="font-size:13px;font-weight:600;color:#B42318">{{formMsg}}</span>
+          </sc-if>
+        </div>
+      </section>
+      </sc-if>
+
+      <!-- KPI -->
+      <section aria-label="Ringkasan tugas" style="display:flex;flex-wrap:wrap;gap:16px">
+        <div class="lift" style="flex:1 1 200px;background:#FFFFFF;border:1px solid #E4E9F2;border-radius:16px;padding:18px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 2px rgba(16,24,40,.05)">
+          <span style="width:46px;height:46px;border-radius:12px;background:#EAF1FC;display:flex;align-items:center;justify-content:center;flex:0 0 auto">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B4DA2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg>
+          </span>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.15">{{kpiToday}}</span>
+            <span style="font-size:13px;font-weight:500;color:#667085">Tugas hari ini</span>
+          </div>
+        </div>
+        <div class="lift" style="flex:1 1 200px;background:#FFFFFF;border:1px solid #E4E9F2;border-radius:16px;padding:18px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 2px rgba(16,24,40,.05)">
+          <span style="width:46px;height:46px;border-radius:12px;background:#E6F6EE;display:flex;align-items:center;justify-content:center;flex:0 0 auto">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#067647" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12.5l3 3 5-6"></path></svg>
+          </span>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.15">{{kpiDone}}</span>
+            <span style="font-size:13px;font-weight:500;color:#667085">Selesai</span>
+          </div>
+        </div>
+        <div class="lift" style="flex:1 1 200px;background:#FFFFFF;border:1px solid #E4E9F2;border-radius:16px;padding:18px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 2px rgba(16,24,40,.05)">
+          <span style="width:46px;height:46px;border-radius:12px;background:#FEE4E2;display:flex;align-items:center;justify-content:center;flex:0 0 auto">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l9 16H3z"></path><path d="M12 10v4M12 17.5v.01"></path></svg>
+          </span>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.15;color:#B42318">{{kpiOverdue}}</span>
+            <span style="font-size:13px;font-weight:500;color:#667085">Terlewat</span>
+          </div>
+        </div>
+        <div class="lift" style="flex:1 1 220px;background:#FFFFFF;border:1px solid #E4E9F2;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 2px rgba(16,24,40,.05)">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+            <span style="font-size:13px;font-weight:500;color:#667085">Completion rate</span>
+            <span style="font-size:22px;font-weight:800;letter-spacing:-.02em;color:#0B4DA2">{{kpiRate}}%</span>
+          </div>
+          <div style="height:8px;border-radius:4px;background:#E4E9F2;overflow:hidden"><div class="bar" style="height:8px;border-radius:4px;background:#0B4DA2;width:{{kpiRate}}%"></div></div>
+        </div>
+      </section>
+
+      <!-- Peninjauan sore -->
+      <section aria-label="Peninjauan sore" style="{{reviewStyle}}">
+        <span style="{{reviewIconStyle}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        </span>
+        <div style="flex:1 1 240px;display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:14px;font-weight:700">Peninjauan sore · 16.00</span>
+          <span style="font-size:13px;font-weight:500">{{reviewText}}</span>
+        </div>
+        <sc-if value="{{hasUnfinished}}" hint-placeholder-val="{{true}}">
+          <button onClick="{{carryAll}}" style="min-height:44px;padding:0 18px;border-radius:12px;border:none;background:#B54708;color:#FFFFFF;font-size:14px;font-weight:600">Bawa ke besok</button>
+        </sc-if>
+      </section>
+
+      <!-- Filter -->
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+        <sc-for list="{{prioChips}}" as="c" hint-placeholder-count="4">
+          <button onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+        </sc-for>
+      </div>
+
+      <!-- Board -->
+      <section aria-label="Papan tugas" style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">
+        <sc-for list="{{cols}}" as="col" hint-placeholder-count="3">
+          <div style="flex:1 1 290px;min-width:0;background:#E9EEF6;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:12px;box-sizing:border-box">
+            <div style="display:flex;align-items:center;gap:10px;padding:2px 4px">
+              <span style="width:10px;height:10px;border-radius:5px;background:{{col.dot}}"></span>
+              <h2 style="margin:0;font-size:15px;font-weight:700;flex:1">{{col.title}}</h2>
+              <span style="min-width:26px;height:26px;border-radius:13px;background:#FFFFFF;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 8px;box-sizing:border-box">{{col.count}}</span>
+            </div>
+            <sc-if value="{{col.isEmpty}}" hint-placeholder-val="{{false}}">
+              <div class="pop" style="border:1px dashed #B5C0D3;border-radius:14px;padding:22px 14px;font-size:13px;font-weight:500;color:#667085;text-align:center">{{col.emptyText}}</div>
+            </sc-if>
+            <sc-for list="{{col.tasks}}" as="t" hint-placeholder-count="2">
+              <article class="lift pop" style="{{t.cardStyle}}">
+                <button onClick="{{t.toggle}}" aria-label="{{t.checkLabel}}" style="width:44px;height:44px;flex:0 0 44px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;padding:0">
+                  <span style="{{t.checkStyle}}">
+                    <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}">
+                      <svg class="pop" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>
+                    </sc-if>
+                  </span>
+                </button>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;padding-top:2px">
+                  <span style="{{t.titleStyle}}">{{t.title}}</span>
+                  <span style="font-size:12px;font-weight:500;color:#667085">{{t.context}}</span>
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+                    <span style="{{t.prioStyle}}"><span style="width:6px;height:6px;border-radius:3px;background:{{t.prioDot}}"></span>{{t.prio}}</span>
+                    <span style="{{t.dueStyle}}">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+                      {{t.dueLabel}}
+                    </span>
+                    <span title="{{t.assignee}}" style="width:26px;height:26px;border-radius:13px;background:{{t.avatarBg}};color:#FFFFFF;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-left:auto">{{t.initial}}</span>
+                  </div>
+                  <sc-if value="{{t.canMove}}" hint-placeholder-val="{{true}}">
+                    <button onClick="{{t.move}}" style="align-self:flex-start;min-height:44px;padding:0 14px;border-radius:10px;border:1px solid #D0D5DD;background:#FFFFFF;color:#0B4DA2;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px">
+                      {{t.moveLabel}}
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+                    </button>
+                  </sc-if>
+                </div>
+              </article>
+            </sc-for>
+          </div>
+        </sc-for>
+      </section>
+    </div>
+    </sc-if>
+
+    <!-- ============ DASHBOARD VIEW ============ -->
+    <sc-if value="{{isDash}}" hint-placeholder-val="{{false}}">
+    <div class="view" style="display:flex;flex-direction:column;gap:22px">
+
+      <header style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <h1 style="margin:0;font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.2">Dashboard Target</h1>
+          <span style="font-size:14px;color:#667085;font-weight:500">November 2026 · Senin, 9 November</span>
+        </div>
+        <span style="display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:#FFFFFF;border:1px solid #E4E9F2;font-size:13px;font-weight:600;color:#344054">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg>
+          Hari kerja 6 / 21
+        </span>
+      </header>
+
+      <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:stretch">
+
+        <!-- Ring total -->
+        <section aria-label="Pencapaian total" class="lift" style="flex:1 1 300px;min-width:0;background:#FFFFFF;border:1px solid #E4E9F2;border-radius:18px;padding:22px;display:flex;flex-direction:column;align-items:center;gap:18px;box-sizing:border-box;box-shadow:0 1px 2px rgba(16,24,40,.05)">
+          <div style="align-self:flex-start;display:flex;align-items:center;justify-content:space-between;width:100%">
+            <h2 style="margin:0;font-size:16px;font-weight:700">Pencapaian total</h2>
+            <span style="font-size:12px;font-weight:600;color:#344054;background:#EEF2F6;border-radius:999px;padding:5px 10px">Pace {{pacePct}}%</span>
+          </div>
+          <div style="position:relative;width:176px;height:176px">
+            <svg width="176" height="176" viewBox="0 0 160 160" aria-hidden="true" style="transform:rotate(-90deg)">
+              <circle cx="80" cy="80" r="64" fill="none" stroke="#E4E9F2" stroke-width="14"></circle>
+              <circle class="ring" cx="80" cy="80" r="64" fill="none" stroke="#0B4DA2" stroke-width="14" stroke-linecap="round" stroke-dasharray="{{ringDash}} 403"></circle>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+              <span style="font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1">{{totalPct}}%</span>
+              <span style="font-size:12px;font-weight:500;color:#667085">dari target</span>
+            </div>
+          </div>
+          <div style="display:flex;width:100%;gap:8px">
+            <div style="flex:1;display:flex;flex-direction:column;gap:2px;align-items:center;padding:10px 4px;border-radius:12px;background:#F4F6FB">
+              <span style="font-size:18px;font-weight:800">{{totalAct}}</span>
+              <span style="font-size:12px;color:#667085;font-weight:500">Actual</span>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:2px;align-items:center;padding:10px 4px;border-radius:12px;background:#F4F6FB">
+              <span style="font-size:18px;font-weight:800">{{totalTar}}</span>
+              <span style="font-size:12px;color:#667085;font-weight:500">Target</span>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:2px;align-items:center;padding:10px 4px;border-radius:12px;background:#F4F6FB">
+              <span style="font-size:18px;font-weight:800">{{remaining}}</span>
+              <span style="font-size:12px;color:#667085;font-weight:500">Sisa</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Chart -->
+        <section aria-label="Progres harian" class="lift" style="flex:2 1 460px;min-width:0;background:#FFFFFF;border:1px solid #E4E9F2;border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box;box-shadow:0 1px 2px rgba(16,24,40,.05)">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px">
+            <h2 style="margin:0;font-size:16px;font-weight:700">Progres harian</h2>
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;font-size:12px;font-weight:600;color:#475467">
+              <span style="display:inline-flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:#0B4DA2;display:inline-block"></span>Actual</span>
+              <span style="display:inline-flex;align-items:center;gap:8px"><span style="width:18px;height:0;border-top:2px dashed #98A2B3;display:inline-block"></span>Target</span>
+            </div>
+          </div>
+          <svg viewBox="0 0 560 220" width="100%" role="img" aria-label="Grafik kumulatif rekening harian dibanding target" style="height:auto;display:block">
+            <g stroke="#E4E9F2" stroke-width="1">
+              <line x1="36" y1="196" x2="548" y2="196"></line>
+              <line x1="36" y1="150" x2="548" y2="150"></line>
+              <line x1="36" y1="104" x2="548" y2="104"></line>
+              <line x1="36" y1="58" x2="548" y2="58"></line>
+              <line x1="36" y1="12" x2="548" y2="12"></line>
+            </g>
+            <g font-size="11" fill="#667085" font-family="Inter,system-ui,sans-serif" text-anchor="end">
+              <text x="28" y="200">0</text>
+              <text x="28" y="154">150</text>
+              <text x="28" y="108">300</text>
+              <text x="28" y="62">450</text>
+              <text x="28" y="16">600</text>
+            </g>
+            <g font-size="11" fill="#667085" font-family="Inter,system-ui,sans-serif" text-anchor="middle">
+              <text x="36" y="214">1</text>
+              <text x="164" y="214">6</text>
+              <text x="292" y="214">11</text>
+              <text x="420" y="214">16</text>
+              <text x="548" y="214">21</text>
+            </g>
+            <path d="{{chart.target}}" fill="none" stroke="#98A2B3" stroke-width="2" stroke-dasharray="6 5"></path>
+            <path d="{{chart.area}}" fill="#0B4DA2" fill-opacity="0.10"></path>
+            <path class="draw" d="{{chart.line}}" pathLength="1" stroke-dasharray="1" fill="none" stroke="#0B4DA2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+            <circle cx="{{chart.dotX}}" cy="{{chart.dotY}}" r="6" fill="#FFFFFF" stroke="#0B4DA2" stroke-width="3"></circle>
+          </svg>
+        </section>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:stretch">
+
+        <!-- Tabel produk -->
+        <section aria-label="Target versus actual" style="flex:1 1 460px;min-width:0;background:#FFFFFF;border:1px solid #E4E9F2;border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box;box-shadow:0 1px 2px rgba(16,24,40,.05)">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px">
+            <h2 style="margin:0;font-size:16px;font-weight:700">Target vs actual</h2>
+            <span style="font-size:12px;font-weight:600;color:#344054;background:#FEF0C7;color:#93370D;border-radius:999px;padding:5px 10px">{{belowPace}} produk di bawah pace</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;border-top:1px solid #EEF2F6">
+            <sc-for list="{{prods}}" as="p" hint-placeholder-count="6">
+              <div style="flex:1 0 auto;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:14px 2px;border-bottom:1px solid #F0F3F8">
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px">
+                  <span style="flex:1 1 130px;min-width:0;font-size:15px;font-weight:700">{{p.name}}</span>
+                  <span style="font-size:13px;font-weight:600;color:#667085"><span style="font-weight:800;color:#101828">{{p.act}}</span> / {{p.tar}}</span>
+                  <span style="font-size:12px;font-weight:700;color:{{p.selColor}}">{{p.selText}} vs pace</span>
+                  <span style="width:46px;text-align:right;font-size:15px;font-weight:800">{{p.pct}}%</span>
+                  <span style="{{p.chipStyle}}"><span style="width:6px;height:6px;border-radius:3px;background:{{p.barColor}}"></span>{{p.status}}</span>
+                </div>
+                <div style="position:relative;height:10px;border-radius:5px;background:#E4E9F2">
+                  <div class="bar" style="height:10px;border-radius:5px;width:{{p.barW}}%;background:{{p.barColor}}"></div>
+                  <div style="position:absolute;top:-4px;left:{{pacePct}}%;width:2px;height:18px;background:#101828;opacity:.55"></div>
+                </div>
+                <sc-if value="{{p.hasSub}}" hint-placeholder-val="{{false}}">
+                  <span style="font-size:12px;color:#667085;font-weight:500">{{p.sub}}</span>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <!-- Leaderboard -->
+        <section aria-label="Leaderboard" style="flex:1.15 1 500px;min-width:0;background:#FFFFFF;border:1px solid #E4E9F2;border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:18px;box-sizing:border-box;box-shadow:0 1px 2px rgba(16,24,40,.05)">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="width:36px;height:36px;border-radius:10px;background:#FEF0C7;display:flex;align-items:center;justify-content:center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#93370D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4"></path><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"></path><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"></path></svg>
+            </span>
+            <h2 style="margin:0;font-size:16px;font-weight:700">Leaderboard</h2>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{roleChips}}" as="c" hint-placeholder-count="3">
+              <button onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+            </sc-for>
+          </div>
+          <div style="flex:1;display:flex;flex-wrap:wrap;gap:16px;min-height:0">
+            <div style="flex:1 1 210px;min-width:0;display:flex;align-items:stretch;justify-content:center;gap:10px;min-height:260px">
+              <sc-for list="{{podium}}" as="m" hint-placeholder-count="3">
+                <div class="pop" style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px">
+                  <span style="{{m.spacerStyle}}"></span>
+                  <span style="{{m.avatarStyle}}">{{m.initial}}</span>
+                  <span style="font-size:13px;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{m.name}}</span>
+                  <span style="font-size:12px;font-weight:700;color:#475467">{{m.pct}}%</span>
+                  <div style="{{m.blockStyle}}">{{m.rank}}</div>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{hasRest}}" hint-placeholder-val="{{true}}">
+            <div style="flex:1.25 1 260px;min-width:0;position:relative;min-height:300px">
+              <ol style="list-style:none;margin:0;padding:0 4px 0 0;display:flex;flex-direction:column;gap:8px;position:absolute;inset:0;overflow-y:auto">
+                <sc-for list="{{rest}}" as="m" hint-placeholder-count="3">
+                  <li class="lift" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:#F8FAFC;border:1px solid #EEF2F6;flex:0 0 auto">
+                    <span style="width:22px;text-align:center;font-size:13px;font-weight:800;color:#667085">{{m.rank}}</span>
+                    <span style="{{m.avatarSmall}}">{{m.initial}}</span>
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+                      <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:0 8px">
+                        <span style="font-size:14px;font-weight:600">{{m.name}}</span>
+                        <span style="font-size:11px;color:#667085">{{m.role}}</span>
+                        <span style="margin-left:auto;font-size:13px;font-weight:800">{{m.pct}}%</span>
+                      </div>
+                      <div style="height:6px;border-radius:3px;background:#E4E9F2;overflow:hidden"><div class="bar" style="height:6px;border-radius:3px;background:#0B4DA2;width:{{m.barW}}%"></div></div>
+                    </div>
+                  </li>
+                </sc-for>
+              </ol>
+            </div>
+            </sc-if>
+          </div>
+        </section>
+      </div>
+
+      <!-- Prediksi target per orang -->
+      <section aria-label="Prediksi target per orang" style="background:#FFFFFF;border:1px solid #E4E9F2;border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:18px;box-shadow:0 1px 2px rgba(16,24,40,.05)">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <h2 style="margin:0;font-size:16px;font-weight:700">Prediksi target per orang</h2>
+            <span style="font-size:12px;color:#667085;font-weight:500">{{predTotal}} orang · proyeksi dari laju saat ini sampai hari kerja 21</span>
+          </div>
+          <span style="font-size:13px;font-weight:700;color:#0B4DA2;background:#EAF1FC;border-radius:999px;padding:7px 14px">Proyeksi cabang {{branchProj}} dari {{totalTar}} rekening ({{branchProjPct}}%)</span>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:12px">
+          <div style="flex:1 1 160px;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;background:#E6F6EE">
+            <span style="width:10px;height:10px;border-radius:5px;background:#12B76A"></span>
+            <span style="font-size:24px;font-weight:800;letter-spacing:-.02em;color:#054F31">{{predOk}}</span>
+            <span style="font-size:13px;font-weight:600;color:#054F31">Aman</span>
+          </div>
+          <div style="flex:1 1 160px;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;background:#FEF0C7">
+            <span style="width:10px;height:10px;border-radius:5px;background:#F79009"></span>
+            <span style="font-size:24px;font-weight:800;letter-spacing:-.02em;color:#93370D">{{predWarn}}</span>
+            <span style="font-size:13px;font-weight:600;color:#93370D">Perlu dorongan</span>
+          </div>
+          <div style="flex:1 1 160px;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;background:#FEE4E2">
+            <span style="width:10px;height:10px;border-radius:5px;background:#F04438"></span>
+            <span style="font-size:24px;font-weight:800;letter-spacing:-.02em;color:#912018">{{predRisk}}</span>
+            <span style="font-size:13px;font-weight:600;color:#912018">Berisiko</span>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:8px 24px;align-items:center">
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{predSortChips}}" as="c" hint-placeholder-count="3">
+              <button onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{predStatusChips}}" as="c" hint-placeholder-count="4">
+              <button onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="overflow:auto;max-height:640px;border:1px solid #EEF2F6;border-radius:14px">
+          <div style="min-width:780px;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 6px 10px 12px;font-size:12px;font-weight:600;color:#667085;border-bottom:1px solid #E4E9F2;background:#F8FAFC;position:sticky;top:0;z-index:1">
+              <span style="width:30px;flex:0 0 30px"></span>
+              <span style="flex:1.3 1 130px">Nama</span>
+              <span style="width:76px;text-align:right">Realisasi</span>
+              <span style="flex:2 1 160px">Progres</span>
+              <span style="width:104px;text-align:right">Prediksi akhir</span>
+              <span style="width:84px;text-align:right">Butuh</span>
+              <span style="width:122px">Status</span>
+              <span style="width:20px;flex:0 0 20px"></span>
+            </div>
+            <sc-if value="{{predEmpty}}" hint-placeholder-val="{{false}}">
+              <div class="pop" style="padding:28px 14px;font-size:14px;font-weight:500;color:#667085;text-align:center">Tidak ada orang pada status ini</div>
+            </sc-if>
+            <sc-for list="{{predRows}}" as="r" hint-placeholder-count="8">
+              <div style="border-bottom:1px solid #F0F3F8">
+                <button onClick="{{r.toggle}}" aria-expanded="{{r.ariaOpen}}" style="width:100%;min-height:64px;padding:10px 6px 10px 12px;border:none;background:transparent;display:flex;align-items:center;gap:12px;text-align:left;color:#101828">
+                  <span style="{{r.avatar}}">{{r.initial}}</span>
+                  <span style="flex:1.3 1 130px;min-width:0;display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:14px;font-weight:700">{{r.name}}</span>
+                    <span style="font-size:12px;font-weight:500;color:#667085">{{r.role}}</span>
+                  </span>
+                  <span style="width:76px;text-align:right;font-size:14px;font-weight:700">{{r.act}} <span style="color:#667085;font-weight:500">/ {{r.tar}}</span></span>
+                  <span style="flex:2 1 160px;display:flex;align-items:center;gap:10px">
+                    <span style="position:relative;flex:1;height:8px;border-radius:4px;background:#E4E9F2;display:block">
+                      <span class="bar" style="display:block;height:8px;border-radius:4px;width:{{r.barW}}%;background:{{r.barColor}}"></span>
+                      <span style="position:absolute;top:-4px;left:{{pacePct}}%;width:2px;height:16px;background:#101828;opacity:.5"></span>
+                    </span>
+                    <span style="width:38px;text-align:right;font-size:13px;font-weight:800">{{r.pct}}%</span>
+                  </span>
+                  <span style="width:104px;text-align:right;display:flex;flex-direction:column;gap:1px;align-items:flex-end">
+                    <span style="font-size:14px;font-weight:800">{{r.proj}}</span>
+                    <span style="font-size:12px;font-weight:600;color:#667085">{{r.projPct}}% dari target</span>
+                  </span>
+                  <span style="width:84px;text-align:right;font-size:13px;font-weight:600;color:#475467">{{r.need}}</span>
+                  <span style="width:122px"><span style="{{r.chipStyle}}"><span style="width:6px;height:6px;border-radius:3px;background:{{r.barColor}}"></span>{{r.status}}</span></span>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="{{r.chevStyle}}"><path d="M6 9l6 6 6-6"></path></svg>
+                </button>
+                <sc-if value="{{r.open}}" hint-placeholder-val="{{false}}">
+                  <div class="pop" style="padding:4px 18px 18px 54px;display:flex;flex-wrap:wrap;gap:8px">
+                    <sc-for list="{{r.items}}" as="it" hint-placeholder-count="4">
+                      <div style="{{it.bg}}flex:1 1 150px;min-width:0;display:flex;flex-direction:column;gap:6px;padding:11px 12px;border-radius:12px">
+                        <span style="font-size:11px;font-weight:600;color:#667085">{{it.label}}</span>
+                        <span style="font-size:15px;font-weight:800">{{it.val}}</span>
+                        <span style="display:block;height:5px;border-radius:3px;background:#FFFFFF;overflow:hidden"><span class="bar" style="display:block;height:5px;border-radius:3px;width:{{it.barW}}%;background:{{it.barColor}}"></span></span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+
+      <!-- Input realisasi -->
+      <section aria-label="Input realisasi" style="background:#FFFFFF;border:1px solid #E4E9F2;border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:16px;box-shadow:0 1px 2px rgba(16,24,40,.05)">
+        <h2 style="margin:0;font-size:16px;font-weight:700">Input realisasi</h2>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+          <span style="font-size:13px;font-weight:600;color:#344054;width:64px">Petugas</span>
+          <sc-for list="{{recMemberChips}}" as="c" hint-placeholder-count="6">
+            <button onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+          <span style="font-size:13px;font-weight:600;color:#344054;width:64px">Produk</span>
+          <sc-for list="{{recProdChips}}" as="c" hint-placeholder-count="7">
+            <button onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:16px">
+          <button onClick="{{record}}" style="min-height:44px;padding:0 20px;border-radius:12px;border:none;background:#0B4DA2;color:#FFFFFF;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:8px;box-shadow:0 1px 2px rgba(16,24,40,.12)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+            Catat rekening
+          </button>
+          <sc-if value="{{hasToast}}" hint-placeholder-val="{{false}}">
+            <span class="pop" style="display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#067647;background:#E6F6EE;border-radius:10px;padding:10px 14px">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>
+              {{toast}}
+            </span>
+          </sc-if>
+        </div>
+      </section>
+    </div>
+    </sc-if>
+
+    <!-- ============ PRODUCT KNOWLEDGE VIEW ============ -->
+    <sc-if value="{{isProd}}" hint-placeholder-val="{{false}}">
+    <div class="view" style="display:flex;flex-direction:column;gap:24px">
+
+      <header style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <h1 style="margin:0;font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.2">Product Knowledge</h1>
+          <span style="font-size:14px;color:#667085;font-weight:500">Diperbarui 3 November 2026 · Sumber: bankmandiri.co.id</span>
+        </div>
+        <div style="position:relative;display:flex;align-items:center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="position:absolute;left:14px"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+          <input type="text" value="{{prodQ}}" onInput="{{onProdQ}}" placeholder="Cari produk, bunga, fitur" aria-label="Cari produk" style="min-height:44px;width:300px;max-width:100%;border:1px solid #D0D5DD;border-radius:12px;padding:0 14px 0 40px;font-family:inherit;font-size:14px;color:#101828;background:#FFFFFF;box-sizing:border-box">
+        </div>
+      </header>
+
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+        <sc-for list="{{prodCatChips}}" as="c" hint-placeholder-count="5">
+          <button onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+        </sc-for>
+      </div>
+
+      <!-- Fokus -->
+      <sc-if value="{{hasFocus}}" hint-placeholder-val="{{true}}">
+      <section aria-label="Produk fokus bulan ini" style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="width:34px;height:34px;border-radius:10px;background:#F5A800;display:flex;align-items:center;justify-content:center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#2B1D00" stroke="#2B1D00" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"></path></svg>
+          </span>
+          <h2 style="margin:0;font-size:18px;font-weight:800;letter-spacing:-.01em">Fokus November</h2>
+          <span style="font-size:12px;font-weight:700;color:#93370D;background:#FEF0C7;border-radius:999px;padding:4px 10px">{{focusCardCount}} produk</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:stretch">
+          <sc-for list="{{focusCards}}" as="p" hint-placeholder-count="3">
+            <article class="lift pop" style="flex:1 1 320px;min-width:0;background:#FFFFFF;border:1px solid #F5C451;border-radius:18px;overflow:hidden;box-shadow:0 12px 28px -12px rgba(245,168,0,.55);display:flex;flex-direction:column">
+              <div style="height:6px;background:linear-gradient(90deg,#F5A800,#FFD36B)"></div>
+              <div style="padding:18px;display:flex;flex-direction:column;gap:14px">
+                <div style="display:flex;align-items:center;gap:12px">
+                  <span style="{{p.badgeStyle}}">{{p.initial}}</span>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:16px;font-weight:800;letter-spacing:-.01em">{{p.name}}</span>
+                    <span style="font-size:12px;font-weight:600;color:#667085">{{p.tag}}</span>
+                  </div>
+                  <span style="font-size:11px;font-weight:700;color:#93370D;background:#FEF0C7;border-radius:999px;padding:4px 10px;white-space:nowrap">Fokus</span>
+                </div>
+                <p style="margin:0;font-size:13px;line-height:1.6;color:#344054">{{p.def}}</p>
+                <div style="display:flex;flex-wrap:wrap;gap:8px">
+                  <sc-for list="{{p.facts}}" as="x" hint-placeholder-count="3">
+                    <div style="flex:1 1 130px;min-width:0;display:flex;flex-direction:column;gap:4px;padding:11px 12px;border-radius:12px;background:#FFF8E6">
+                      <span style="font-size:11px;font-weight:600;color:#93370D">{{x.l}}</span>
+                      <span style="font-size:14px;font-weight:800;line-height:1.35;color:#101828">{{x.v}}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-if value="{{p.demo}}" hint-placeholder-val="{{false}}">
+                  <span style="align-self:flex-start;font-size:11px;font-weight:600;color:#667085;background:#F2F4F7;border-radius:6px;padding:4px 8px">Data contoh, belum terverifikasi</span>
+                </sc-if>
+              </div>
+            </article>
+          </sc-for>
+        </div>
+      </section>
+      </sc-if>
+
+      <!-- Semua produk -->
+      <section aria-label="Semua produk" style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <h2 style="margin:0;font-size:18px;font-weight:800;letter-spacing:-.01em">Semua produk</h2>
+          <span style="font-size:12px;font-weight:700;color:#344054;background:#EAECF0;border-radius:999px;padding:4px 10px">{{prodListCount}}</span>
+        </div>
+        <sc-if value="{{prodEmpty}}" hint-placeholder-val="{{false}}">
+          <div class="pop" style="border:1px dashed #B5C0D3;border-radius:14px;padding:28px 14px;font-size:14px;font-weight:500;color:#667085;text-align:center">Produk tidak ditemukan</div>
+        </sc-if>
+        <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start">
+          <sc-for list="{{prodList}}" as="p" hint-placeholder-count="6">
+            <article class="lift" style="{{p.cardStyle}}">
+              <button onClick="{{p.toggle}}" aria-expanded="{{p.ariaOpen}}" style="width:100%;min-height:68px;padding:12px 14px;border:none;background:transparent;display:flex;align-items:center;gap:12px;text-align:left;color:#101828">
+                <span style="{{p.badgeStyle}}">{{p.initial}}</span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                  <span style="font-size:15px;font-weight:700">{{p.name}}</span>
+                  <span style="font-size:12px;font-weight:500;color:#667085;line-height:1.4">{{p.summary}}</span>
+                </span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="{{p.chevStyle}}"><path d="M6 9l6 6 6-6"></path></svg>
+              </button>
+              <sc-if value="{{p.open}}" hint-placeholder-val="{{false}}">
+                <div class="pop" style="padding:2px 16px 18px;display:flex;flex-direction:column;gap:14px">
+                  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+                    <span style="{{p.catStyle}}">{{p.tag}}</span>
+                  </div>
+                  <p style="margin:0;font-size:13px;line-height:1.6;color:#344054">{{p.def}}</p>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px">
+                    <sc-for list="{{p.facts}}" as="x" hint-placeholder-count="4">
+                      <div style="flex:1 1 140px;min-width:0;display:flex;flex-direction:column;gap:4px;padding:11px 12px;border-radius:12px;background:#F4F6FB">
+                        <span style="font-size:11px;font-weight:600;color:#667085">{{x.l}}</span>
+                        <span style="font-size:14px;font-weight:700;line-height:1.35;color:#101828">{{x.v}}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{p.hasFeats}}" hint-placeholder-val="{{true}}">
+                    <div style="display:flex;flex-wrap:wrap;gap:6px">
+                      <sc-for list="{{p.feats}}" as="ft" hint-placeholder-count="4">
+                        <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#344054;background:#FFFFFF;border:1px solid #E4E9F2;border-radius:999px;padding:5px 11px">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#067647" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>
+                          {{ft.t}}
+                        </span>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:#475467;font-weight:500">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"></path></svg>
+                    <span><span style="font-weight:700;color:#344054">Sasaran:</span> {{p.target}}</span>
+                  </div>
+                </div>
+              </sc-if>
+            </article>
+          </sc-for>
+        </div>
+      </section>
+
+      <p style="margin:0;font-size:12px;line-height:1.6;color:#667085;font-weight:500;max-width:760px">Sumber: halaman produk, Suku Bunga Dana (pembaruan terakhir 15 Jul 2025), dan Suku Bunga Dasar Kredit (per 31 Agu 2026) di bankmandiri.co.id, serta CNBC Indonesia untuk saldo minimum (Mei 2026). Suku bunga dan biaya bisa berubah, cek ulang sebelum disampaikan ke nasabah.</p>
+    </div>
+    </sc-if>
+
+  </main>
+
+  <!-- ============ POP UP PRODUK FOKUS ============ -->
+  <sc-if value="{{focusOpen}}" hint-placeholder-val="{{true}}">
+  <aside class="slideIn" aria-label="Produk fokus bulan ini" style="position:fixed;right:24px;bottom:24px;width:388px;max-width:calc(100vw - 32px);max-height:calc(100vh - 48px);display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E4E9F2;border-radius:20px;box-shadow:0 28px 56px -14px rgba(16,24,40,.30),0 4px 14px rgba(16,24,40,.08);overflow:hidden;z-index:50;font-family:Inter,system-ui,sans-serif;color:#101828">
+    <div style="display:flex;align-items:center;gap:12px;padding:16px 16px 16px 18px;background:linear-gradient(135deg,#0B4DA2 0%,#093A7D 100%);color:#FFFFFF">
+      <span style="width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex:0 0 auto">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#F5A800" stroke="#F5A800" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"></path></svg>
+      </span>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+        <span style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#BBD3F2">FOKUS NOVEMBER</span>
+        <span style="font-size:16px;font-weight:700;line-height:1.25">Produk fokus bulan ini</span>
+      </div>
+      <button onClick="{{closeFocus}}" aria-label="Tutup pengingat produk fokus" style="width:44px;height:44px;flex:0 0 44px;border:none;border-radius:12px;background:rgba(255,255,255,.12);color:#FFFFFF;display:flex;align-items:center;justify-content:center;padding:0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
+    </div>
+
+    <div style="overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px">
+      <sc-for list="{{focusItems}}" as="f" hint-placeholder-count="3">
+        <div style="{{f.cardStyle}}">
+          <button onClick="{{f.toggle}}" aria-expanded="{{f.ariaOpen}}" style="width:100%;min-height:60px;padding:10px 12px;border:none;background:transparent;display:flex;align-items:center;gap:12px;text-align:left;color:#101828">
+            <span style="{{f.badgeStyle}}">{{f.initial}}</span>
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:15px;font-weight:700">{{f.name}}</span>
+              <span style="font-size:12px;font-weight:500;color:#667085">{{f.tag}}</span>
+            </span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="{{f.chevStyle}}"><path d="M6 9l6 6 6-6"></path></svg>
+          </button>
+          <sc-if value="{{f.open}}" hint-placeholder-val="{{false}}">
+            <div class="pop" style="padding:2px 14px 16px;display:flex;flex-direction:column;gap:14px">
+              <p style="margin:0;font-size:13px;line-height:1.6;color:#344054">{{f.def}}</p>
+              <div style="display:flex;gap:10px">
+                <div style="flex:1.3;display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:12px;background:#F4F6FB">
+                  <span style="font-size:11px;font-weight:600;color:#667085">Setoran awal minimum</span>
+                  <span style="font-size:15px;font-weight:800;letter-spacing:-.01em">{{f.min}}</span>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:12px;background:#E6F6EE">
+                  <span style="font-size:11px;font-weight:600;color:#067647">Suku bunga</span>
+                  <span style="font-size:15px;font-weight:800;letter-spacing:-.01em;color:#054F31">{{f.rate}}</span>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:#475467;font-weight:500">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"></path></svg>
+                <span><span style="font-weight:700;color:#344054">Sasaran:</span> {{f.target}}</span>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+    <div style="padding:10px 18px 14px;font-size:11px;color:#667085;font-weight:500;border-top:1px solid #EEF2F6">Angka ilustrasi. Sesuaikan dengan ketentuan resmi produk.</div>
+  </aside>
+  </sc-if>
+
+  <sc-if value="{{focusClosed}}" hint-placeholder-val="{{false}}">
+    <button class="fabIn" onClick="{{openFocus}}" aria-label="Buka produk fokus bulan ini" style="position:fixed;right:24px;bottom:24px;z-index:50;min-height:52px;padding:0 20px 0 16px;border-radius:26px;border:none;background:#0B4DA2;color:#FFFFFF;font-size:14px;font-weight:700;display:inline-flex;align-items:center;gap:10px;box-shadow:0 14px 28px -8px rgba(11,77,162,.55)">
+      <span class="ping" style="width:26px;height:26px;border-radius:13px;background:#F5A800;display:flex;align-items:center;justify-content:center">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="#2B1D00" stroke="#2B1D00" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"></path></svg>
+      </span>
+      Produk fokus
+    </button>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":1180}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.nextId = 13;
+    this.state = {
+      view: 'task',
+      focusOpen: true,
+      focusId: 'prima',
+      prodQ: '',
+      prodCat: 'Semua',
+      prodOpen: '',
+      prio: 'Semua',
+      q: '',
+      showForm: false,
+      newTitle: '',
+      newPrio: 'Sedang',
+      newDue: 0,
+      newWho: 'Rani',
+      formMsg: '',
+      toast: '',
+      roleFilter: 'Semua',
+      recMember: 'rani',
+      recProd: 'ind',
+      predSort: 'proj',
+      predStatus: 'Semua',
+      predOpen: '',
+      tasks: [
+        { id: 1, title: 'Follow up pembukaan rekening payroll', ctx: 'Payroll · PT Sinar Karya', prio: 'Tinggi', due: -1, time: '', done: false, who: 'Rani' },
+        { id: 2, title: 'Lengkapi dokumen KYC nasabah Next-G', ctx: 'Next-G · 3 nasabah', prio: 'Tinggi', due: -2, time: '', done: false, who: 'Dimas' },
+        { id: 3, title: 'Kunjungan aktivasi Livin’ Merchant', ctx: 'Payroll merchant · Warung Bu Tini', prio: 'Sedang', due: -1, time: '', done: false, who: 'Bayu' },
+        { id: 4, title: 'Tawarkan Tabungan Emas ke nasabah prioritas', ctx: 'Tabungan Emas · 5 nasabah', prio: 'Sedang', due: 0, time: '13.30', done: false, who: 'Sinta' },
+        { id: 5, title: 'Presentasi paket payroll', ctx: 'Payroll · PT Citra Boga', prio: 'Tinggi', due: 0, time: '14.00', done: false, who: 'Rani' },
+        { id: 6, title: 'Aktivasi Livin’ nasabah baru', ctx: 'Individu · 8 nasabah', prio: 'Rendah', due: 0, time: '15.00', done: false, who: 'Maya' },
+        { id: 7, title: 'Pengingat nasabah MTCR jatuh tempo', ctx: 'MTCR · 4 nasabah', prio: 'Sedang', due: 0, time: '09.00', done: true, who: 'Fajar' },
+        { id: 8, title: 'Hubungi nasabah dormant', ctx: 'Individu · 10 nasabah', prio: 'Rendah', due: 0, time: '10.30', done: true, who: 'Maya' },
+        { id: 9, title: 'Follow up RTW', ctx: 'RTW · Toko Mitra Abadi', prio: 'Tinggi', due: 1, time: '09.30', done: false, who: 'Bayu' },
+        { id: 10, title: 'Input realisasi rekening mingguan', ctx: 'Laporan mingguan', prio: 'Rendah', due: 1, time: '11.00', done: false, who: 'Dimas' },
+        { id: 11, title: 'Survei lokasi merchant baru', ctx: 'Payroll merchant · area Tomang', prio: 'Sedang', due: 2, time: '10.00', done: false, who: 'Sinta' },
+        { id: 12, title: 'Siapkan materi briefing pagi', ctx: 'Operasional cabang', prio: 'Rendah', due: 1, time: '08.00', done: false, who: 'Fajar' }
+      ],
+      members: [
+        { id: 'rani', name: 'Rani', role: 'Account Officer', v: [1, 1, 4, 1, 0, 0, 3] },
+        { id: 'bayu', name: 'Bayu', role: 'Sales', v: [0, 0, 0, 8, 3, 0, 1] },
+        { id: 'sinta', name: 'Sinta', role: 'Sales', v: [0, 0, 0, 7, 2, 1, 1] },
+        { id: 'dimas', name: 'Dimas', role: 'Account Officer', v: [1, 0, 3, 1, 0, 0, 3] },
+        { id: 'maya', name: 'Maya', role: 'Sales', v: [0, 0, 0, 5, 2, 1, 0] },
+        { id: 'fajar', name: 'Fajar', role: 'Account Officer', v: [0, 0, 3, 1, 0, 0, 3] },
+        { id: 'anisa', name: 'Anisa', role: 'Account Officer', v: [0, 1, 3, 2, 0, 0, 2] },
+        { id: 'rizky', name: 'Rizky', role: 'Sales', v: [0, 0, 0, 6, 2, 1, 0] },
+        { id: 'putri', name: 'Putri', role: 'Sales', v: [0, 0, 0, 7, 2, 1, 0] },
+        { id: 'hendra', name: 'Hendra', role: 'Account Officer', v: [1, 0, 2, 1, 0, 0, 2] },
+        { id: 'lestari', name: 'Lestari', role: 'Account Officer', v: [0, 0, 2, 3, 0, 0, 2] },
+        { id: 'galih', name: 'Galih', role: 'Account Officer', v: [0, 1, 0, 2, 0, 0, 1] },
+        { id: 'nadia', name: 'Nadia', role: 'Sales', v: [0, 0, 2, 4, 1, 0, 1] },
+        { id: 'yoga', name: 'Yoga', role: 'Sales', v: [0, 0, 1, 6, 2, 0, 0] },
+        { id: 'citra', name: 'Citra', role: 'Sales', v: [0, 0, 2, 5, 1, 1, 0] },
+        { id: 'andi', name: 'Andi', role: 'Sales', v: [0, 0, 2, 6, 2, 1, 0] },
+        { id: 'wulan', name: 'Wulan', role: 'Account Officer', v: [0, 0, 2, 4, 1, 0, 1] },
+        { id: 'evan', name: 'Evan', role: 'Sales', v: [0, 0, 0, 2, 0, 8, 1] },
+        { id: 'bagas', name: 'Bagas', role: 'Sales', v: [0, 0, 0, 0, 0, 9, 2] }
+      ]
+    };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const set = (o) => this.setState(o);
+
+    const chipBase = 'min-height:40px;padding:0 16px;border-radius:999px;font-size:13px;font-weight:600;';
+    const chip = (on) => chipBase + (on
+      ? 'background:#0B4DA2;color:#FFFFFF;border:1px solid #0B4DA2;box-shadow:0 1px 2px rgba(11,77,162,.25);'
+      : 'background:#FFFFFF;color:#344054;border:1px solid #D0D5DD;');
+    const navBase = 'min-height:48px;padding:0 14px;border-radius:12px;border:none;font-size:14px;font-weight:600;display:flex;align-items:center;gap:12px;width:100%;';
+    const nav = (on) => navBase + (on ? 'background:#EAF1FC;color:#0B4DA2;' : 'background:transparent;color:#475467;');
+
+    const avatarColors = { Rani: '#0B4DA2', Bayu: '#067647', Sinta: '#B54708', Dimas: '#6941C6', Maya: '#C11574', Fajar: '#0E7090', Anda: '#475467' };
+    const palette = ['#0B4DA2', '#067647', '#B54708', '#6941C6', '#C11574', '#0E7090', '#B42318', '#3538CD'];
+    const avBg = (n) => { let h = 0; for (let i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) % 997; return palette[h % palette.length]; };
+
+    /* ---------- tasks ---------- */
+    const all = s.tasks;
+    const overdueAll = all.filter((t) => t.due < 0 && !t.done);
+    const todayAll = all.filter((t) => t.due === 0);
+    const doneToday = todayAll.filter((t) => t.done);
+    const unfinishedToday = todayAll.filter((t) => !t.done);
+    const denom = todayAll.length + overdueAll.length;
+    const rate = denom === 0 ? 100 : Math.round((doneToday.length / denom) * 100);
+
+    const prioMap = {
+      Tinggi: { st: 'background:#FEE4E2;color:#912018;', dot: '#D92D20' },
+      Sedang: { st: 'background:#FEF0C7;color:#93370D;', dot: '#F79009' },
+      Rendah: { st: 'background:#EAECF0;color:#344054;', dot: '#667085' }
+    };
+    const pillBase = 'display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;border-radius:999px;padding:4px 10px;';
+    const dueText = (t) => {
+      const d = t.due;
+      const base = d < 0 ? 'Terlewat ' + (-d) + ' hari' : d === 0 ? 'Hari ini' : d === 1 ? 'Besok' : d === 2 ? 'Lusa' : '+' + d + ' hari';
+      return t.time ? base + ' · ' + t.time : base;
+    };
+
+    const mk = (t) => {
+      let moveLabel, to;
+      if (t.due < 0) { moveLabel = 'Kerjakan hari ini'; to = 0; }
+      else if (t.due === 0) { moveLabel = 'Bawa ke besok'; to = 1; }
+      else { moveLabel = 'Majukan ke hari ini'; to = 0; }
+      const pm = prioMap[t.prio];
+      return {
+        id: t.id,
+        title: t.title,
+        context: t.ctx,
+        prio: t.prio,
+        prioStyle: pillBase + pm.st,
+        prioDot: pm.dot,
+        dueLabel: dueText(t),
+        dueStyle: pillBase + (t.due < 0 ? 'background:#FEE4E2;color:#912018;' : 'background:#F2F4F7;color:#344054;'),
+        assignee: t.who,
+        avatarBg: avBg(t.who),
+        initial: t.who.charAt(0),
+        done: t.done,
+        canMove: !t.done,
+        moveLabel,
+        cardStyle: 'background:#FFFFFF;border:1px solid #E4E9F2;border-radius:14px;padding:12px 14px 14px 6px;display:flex;gap:4px;align-items:flex-start;box-shadow:0 1px 2px rgba(16,24,40,.05);' + (t.done ? 'opacity:.72;' : ''),
+        titleStyle: 'font-size:14px;font-weight:600;line-height:1.4;transition:color .25s ease;' + (t.done ? 'text-decoration:line-through;color:#667085;' : 'color:#101828;'),
+        checkStyle: 'width:22px;height:22px;border-radius:7px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;transition:background-color .2s ease,border-color .2s ease;' + (t.done ? 'background:#067647;border:2px solid #067647;' : 'background:#FFFFFF;border:2px solid #98A2B3;'),
+        checkLabel: (t.done ? 'Tandai belum selesai: ' : 'Tandai selesai: ') + t.title,
+        toggle: () => set({ tasks: s.tasks.map((x) => x.id === t.id ? { ...x, done: !x.done } : x) }),
+        move: () => set({ tasks: s.tasks.map((x) => x.id === t.id ? { ...x, due: to } : x) })
+      };
+    };
+
+    const ql = s.q.trim().toLowerCase();
+    const vis = (t) => (s.prio === 'Semua' || t.prio === s.prio)
+      && (ql === '' || (t.title + ' ' + t.ctx + ' ' + t.who).toLowerCase().indexOf(ql) !== -1);
+    const overdueCol = all.filter((t) => t.due < 0 && !t.done && vis(t)).map(mk);
+    const todayCol = all.filter((t) => t.due === 0 && vis(t)).map(mk);
+    const laterCol = all.filter((t) => t.due > 0 && vis(t)).sort((a, b) => a.due - b.due).map(mk);
+
+    const cols = [
+      { title: 'Terlewat', dot: '#D92D20', tasks: overdueCol, count: overdueCol.length, isEmpty: overdueCol.length === 0, emptyText: 'Tidak ada tugas terlewat' },
+      { title: 'Hari ini', dot: '#0B4DA2', tasks: todayCol, count: todayCol.length, isEmpty: todayCol.length === 0, emptyText: 'Tidak ada tugas' },
+      { title: 'Besok & seterusnya', dot: '#667085', tasks: laterCol, count: laterCol.length, isEmpty: laterCol.length === 0, emptyText: 'Tidak ada tugas' }
+    ];
+
+    const prioChips = ['Semua', 'Tinggi', 'Sedang', 'Rendah'].map((p) => ({ label: p, style: chip(s.prio === p), pick: () => set({ prio: p }) }));
+    const newPrioChips = ['Tinggi', 'Sedang', 'Rendah'].map((p) => ({ label: p, style: chip(s.newPrio === p), pick: () => set({ newPrio: p }) }));
+    const newDueChips = [['Hari ini', 0], ['Besok', 1], ['Lusa', 2]].map((d) => ({ label: d[0], style: chip(s.newDue === d[1]), pick: () => set({ newDue: d[1] }) }));
+    const newWhoChips = s.members.map((m) => ({ label: m.name, style: chip(s.newWho === m.name), pick: () => set({ newWho: m.name }) }));
+
+    const allDone = unfinishedToday.length === 0;
+    const reviewText = allDone ? 'Semua tugas hari ini selesai' : unfinishedToday.length + ' tugas hari ini belum selesai';
+    const reviewStyle = 'border-radius:16px;padding:14px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:14px;transition:background-color .4s ease,border-color .4s ease,color .4s ease;'
+      + (allDone ? 'background:#E6F6EE;border:1px solid #A6E4C4;color:#054F31;' : 'background:#FFF6E5;border:1px solid #FEDF89;color:#7A2E0E;');
+    const reviewIconStyle = 'width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;transition:background-color .4s ease;'
+      + (allDone ? 'background:#CDEFDD;' : 'background:#FEF0C7;');
+
+    /* ---------- dashboard ---------- */
+    const DAY = 6, DAYS = 21;
+    const PN = ['rtw', 'pm', 'pn', 'ind', 'ng', 'te', 'mt'];
+    const PT = [10, 11, 91, 254, 66, 61, 80];
+    const sums = PN.map((k, j) => s.members.reduce((x, m) => x + m.v[j], 0));
+    const a = { rtw: sums[0], pm: sums[1], pn: sums[2], ind: sums[3], ng: sums[4], te: sums[5], mt: sums[6] };
+    const pace = DAY / DAYS;
+
+    /* target per orang: komitmen cabang dibagi menurut peran (largest remainder) */
+    const roleW = { 'Sales': [0.4, 0.4, 0.6, 1.3, 1.3, 1.2, 0.7], 'Account Officer': [1.6, 1.6, 1.4, 0.7, 0.7, 0.8, 1.3] };
+    const tgt = s.members.map(() => []);
+    PT.forEach((total, j) => {
+      const ws = s.members.map((m) => roleW[m.role][j]);
+      const sw = ws.reduce((x, y) => x + y, 0);
+      const raw = ws.map((w) => (total * w) / sw);
+      const fl = raw.map((x) => Math.floor(x));
+      let left = total - fl.reduce((x, y) => x + y, 0);
+      raw.map((x, i) => [x - Math.floor(x), i]).sort((p, q) => q[0] - p[0] || p[1] - q[1]).forEach((p) => { if (left > 0) { fl[p[1]]++; left--; } });
+      fl.forEach((v, i) => { tgt[i][j] = v; });
+    });
+    const people = s.members.map((m, i) => {
+      const act = m.v.reduce((x, y) => x + y, 0);
+      const tar = tgt[i].reduce((x, y) => x + y, 0);
+      return { id: m.id, name: m.name, role: m.role, v: m.v, tv: tgt[i], act, tar };
+    });
+    const pacePct = Math.round(pace * 100);
+    const defs = [
+      { name: 'RTW', act: a.rtw, tar: 10, sub: '' },
+      { name: 'Payroll', act: a.pm + a.pn, tar: 100, sub: 'Merchant ' + a.pm + '/11 · Non-merchant ' + a.pn + '/91' },
+      { name: 'Individu', act: a.ind, tar: 254, sub: '' },
+      { name: 'Next-G', act: a.ng, tar: 66, sub: '' },
+      { name: 'Tabungan Emas', act: a.te, tar: 61, sub: '' },
+      { name: 'MTCR', act: a.mt, tar: 80, sub: '' }
+    ];
+    const chipSt = 'display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;border-radius:999px;padding:5px 10px;white-space:nowrap;';
+    let belowPace = 0;
+    const prods = defs.map((d) => {
+      const r = d.act / d.tar;
+      let status, st, color;
+      if (r >= pace) { status = 'Sesuai target'; st = 'background:#E6F6EE;color:#054F31;'; color = '#12B76A'; }
+      else if (r >= pace - 0.15) { status = 'Perlu dorongan'; st = 'background:#FEF0C7;color:#93370D;'; color = '#F79009'; belowPace++; }
+      else { status = 'Tertinggal'; st = 'background:#FEE4E2;color:#912018;'; color = '#F04438'; belowPace++; }
+      const diff = d.act - Math.round(d.tar * pace);
+      return {
+        name: d.name, act: d.act, tar: d.tar,
+        pct: Math.round(r * 100),
+        barW: Math.min(100, Math.round(r * 100)),
+        barColor: color, status, chipStyle: chipSt + st,
+        sub: d.sub, hasSub: d.sub !== '',
+        selText: (diff > 0 ? '+' : diff < 0 ? '−' : '') + Math.abs(diff),
+        selColor: diff >= 0 ? '#067647' : '#B42318'
+      };
+    });
+    const totalAct = defs.reduce((x, d) => x + d.act, 0);
+    const totalTar = defs.reduce((x, d) => x + d.tar, 0);
+    const totalPct = Math.round((totalAct / totalTar) * 100);
+
+    /* chart */
+    const L = 36, T = 12, plotW = 512, plotH = 184;
+    const X = (d) => L + ((d - 1) / 20) * plotW;
+    const Y = (v) => T + plotH - (Math.min(v, 600) / 600) * plotH;
+    const dailyArr = [0.12, 0.17, 0.2, 0.15, 0.18].map((w) => Math.round(totalAct * w));
+    dailyArr.push(totalAct - dailyArr.reduce((x, y) => x + y, 0));
+    let cum = 0;
+    const pts = dailyArr.map((v, i) => { cum += v; return [X(i + 1), Y(cum)]; });
+    const f = (n) => n.toFixed(1);
+    const lineD = pts.map((p, i) => (i === 0 ? 'M' : 'L') + f(p[0]) + ' ' + f(p[1])).join(' ');
+    const lastP = pts[pts.length - 1];
+    const areaD = lineD + ' L' + f(lastP[0]) + ' ' + f(Y(0)) + ' L' + f(pts[0][0]) + ' ' + f(Y(0)) + ' Z';
+    const targetD = 'M' + f(X(1)) + ' ' + f(Y(totalTar / 21)) + ' L' + f(X(21)) + ' ' + f(Y(totalTar));
+    const chart = { line: lineD, area: areaD, target: targetD, dotX: f(lastP[0]), dotY: f(lastP[1]) };
+
+    const roleChips = ['Semua', 'Sales', 'Account Officer'].map((r) => ({ label: r, style: chip(s.roleFilter === r), pick: () => set({ roleFilter: r }) }));
+    const ranked = people
+      .filter((m) => s.roleFilter === 'Semua' || m.role === s.roleFilter)
+      .map((m) => ({ ...m, a: m.act, t: m.tar, r: m.act / m.tar }))
+      .sort((x, y) => y.r - x.r)
+      .map((m, i) => ({
+        rank: i + 1, name: m.name, role: m.role, act: m.a, tar: m.t, initial: m.name.charAt(0),
+        pct: Math.round(m.r * 100), barW: Math.min(100, Math.round(m.r * 100)),
+        avatarSmall: 'width:30px;height:30px;border-radius:15px;color:#FFFFFF;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto;background:' + avBg(m.name) + ';'
+      }));
+    const blockCfg = {
+      1: { g: 3, h: 88, bg: '#F5A800', fg: '#2B1D00' },
+      2: { g: 2.2, h: 64, bg: '#D0D5DD', fg: '#1D2939' },
+      3: { g: 1.6, h: 48, bg: '#EAC9A0', fg: '#3A2108' }
+    };
+    const podiumRaw = [ranked[1], ranked[0], ranked[2]].filter((x) => x);
+    const podium = podiumRaw.map((m) => {
+      const c = blockCfg[m.rank];
+      return {
+        rank: m.rank, name: m.name, initial: m.initial, pct: m.pct,
+        spacerStyle: 'flex:' + (3 - c.g) + ' 1 0;min-height:0;',
+        avatarStyle: 'width:' + (m.rank === 1 ? 56 : 46) + 'px;height:' + (m.rank === 1 ? 56 : 46) + 'px;border-radius:50%;color:#FFFFFF;font-size:' + (m.rank === 1 ? 18 : 15) + 'px;font-weight:700;display:flex;align-items:center;justify-content:center;background:' + avBg(m.name) + ';' + (m.rank === 1 ? 'box-shadow:0 0 0 3px #F5A800;' : ''),
+        blockStyle: 'width:100%;flex:' + c.g + ' 1 0;min-height:' + c.h + 'px;border-radius:12px 12px 4px 4px;background:' + c.bg + ';color:' + c.fg + ';font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;transition:height .5s ease;'
+      };
+    });
+    const rest = ranked.slice(3);
+
+    /* ---------- prediksi per orang ---------- */
+    const PL = ['RTW', 'Payroll Merchant', 'Payroll Non-Merchant', 'Individu', 'Next-G', 'Tabungan Emas', 'MTCR'];
+    const stName = ['Aman', 'Perlu dorongan', 'Berisiko'];
+    const stStyle = ['background:#E6F6EE;color:#054F31;', 'background:#FEF0C7;color:#93370D;', 'background:#FEE4E2;color:#912018;'];
+    const stDot = ['#12B76A', '#F79009', '#F04438'];
+    const fmt1 = (n) => n.toFixed(1).replace('.', ',');
+    const predAll = people.map((p) => {
+      const proj = (p.act / DAY) * DAYS;
+      const projPct = proj / p.tar;
+      const st = projPct >= 1 ? 0 : projPct >= 0.85 ? 1 : 2;
+      const need = Math.max(0, (p.tar - p.act) / (DAYS - DAY));
+      return { ...p, proj, projPct, st, need };
+    });
+    const predCount = [0, 1, 2].map((k) => predAll.filter((p) => p.st === k).length);
+    const predSorted = predAll
+      .filter((p) => s.predStatus === 'Semua' || stName[p.st] === s.predStatus)
+      .sort((x, y) => s.predSort === 'name' ? x.name.localeCompare(y.name) : s.predSort === 'need' ? y.need - x.need : y.projPct - x.projPct);
+    const predRows = predSorted.map((p) => {
+      const open = s.predOpen === p.id;
+      const pct = p.act / p.tar;
+      const items = PN.map((k, j) => {
+        const ta = p.tv[j], ac = p.v[j];
+        return {
+          label: PL[j], val: ac + ' / ' + ta,
+          bg: ta > 0 && ac >= ta ? 'background:#E6F6EE;' : 'background:#F4F6FB;',
+          barW: ta > 0 ? Math.min(100, Math.round((ac / ta) * 100)) : (ac > 0 ? 100 : 0),
+          barColor: ta > 0 && ac >= ta ? '#12B76A' : '#0B4DA2',
+          show: ta > 0 || ac > 0
+        };
+      }).filter((x) => x.show);
+      return {
+        name: p.name, role: p.role, initial: p.name.charAt(0), items,
+        avatar: 'width:30px;height:30px;border-radius:15px;color:#FFFFFF;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto;background:' + avBg(p.name) + ';',
+        act: p.act, tar: p.tar,
+        pct: Math.round(pct * 100), barW: Math.min(100, Math.round(pct * 100)),
+        barColor: stDot[p.st],
+        proj: Math.round(p.proj), projPct: Math.round(p.projPct * 100),
+        need: p.need === 0 ? 'Tercapai' : fmt1(p.need) + ' / hari',
+        status: stName[p.st],
+        chipStyle: chipSt + stStyle[p.st],
+        open, ariaOpen: open ? 'true' : 'false',
+        chevStyle: 'flex:0 0 auto;transition:transform .3s cubic-bezier(.2,.8,.2,1);transform:rotate(' + (open ? 180 : 0) + 'deg);',
+        toggle: () => set({ predOpen: open ? '' : p.id })
+      };
+    });
+    const predSortChips = [['proj', 'Prediksi tertinggi'], ['need', 'Butuh per hari tertinggi'], ['name', 'Nama A-Z']].map((x) => ({ label: x[1], style: chip(s.predSort === x[0]), pick: () => set({ predSort: x[0] }) }));
+    const predStatusChips = ['Semua', 'Aman', 'Perlu dorongan', 'Berisiko'].map((x) => ({ label: x, style: chip(s.predStatus === x), pick: () => set({ predStatus: x }) }));
+    const branchProj = Math.round((totalAct / DAY) * DAYS);
+
+    const prodNames = [['rtw', 'RTW'], ['pm', 'Payroll Merchant'], ['pn', 'Payroll Non-Merchant'], ['ind', 'Individu'], ['ng', 'Next-G'], ['te', 'Tabungan Emas'], ['mt', 'MTCR']];
+    const recMemberChips = s.members.map((m) => ({ label: m.name, style: chip(s.recMember === m.id), pick: () => set({ recMember: m.id }) }));
+    const recProdChips = prodNames.map((p) => ({ label: p[1], style: chip(s.recProd === p[0]), pick: () => set({ recProd: p[0] }) }));
+
+    /* ---------- produk fokus ---------- */
+    const focusData = [
+      { id: 'prima', name: 'Mandiri Prima', tag: 'Tabungan Rupiah', color: '#0B4DA2', def: 'Tabungan rupiah untuk nasabah prioritas dengan limit transaksi lebih tinggi, layanan relationship manager, dan privilese eksklusif.', min: 'Rp 25.000.000', rate: '2,25% p.a.', target: 'Nasabah prioritas dan pemilik usaha' },
+      { id: 'xtra', name: 'Mandiri Prima Xtra', tag: 'Tabungan Rupiah berjenjang', color: '#067647', def: 'Tabungan rupiah dengan suku bunga berjenjang yang lebih tinggi untuk saldo mengendap, cocok bagi dana jangka menengah.', min: 'Rp 100.000.000', rate: '3,00% p.a.', target: 'Nasabah dengan dana mengendap' },
+      { id: 'usd', name: 'Mandiri Prima USD', tag: 'Tabungan Valas', color: '#B54708', def: 'Tabungan dolar AS untuk transaksi valas, perjalanan, biaya pendidikan di luar negeri, dan lindung nilai terhadap fluktuasi kurs.', min: 'USD 5.000', rate: '0,50% p.a.', target: 'Eksportir, pelajar luar negeri, traveler' }
+    ];
+    const focusItems = focusData.map((f) => {
+      const open = s.focusId === f.id;
+      return {
+        name: f.name, tag: f.tag, def: f.def, min: f.min, rate: f.rate, target: f.target,
+        initial: f.name.indexOf('USD') !== -1 ? '$' : f.name.indexOf('Xtra') !== -1 ? 'X' : 'P',
+        open, ariaOpen: open ? 'true' : 'false',
+        cardStyle: 'border-radius:16px;overflow:hidden;transition:background-color .25s ease,border-color .25s ease,box-shadow .25s ease;' + (open ? 'background:#FFFFFF;border:1px solid #BBD3F2;box-shadow:0 4px 14px rgba(11,77,162,.10);' : 'background:#F7F9FC;border:1px solid #EEF2F6;'),
+        badgeStyle: 'width:40px;height:40px;border-radius:12px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#FFFFFF;background:' + f.color + ';',
+        chevStyle: 'flex:0 0 auto;transition:transform .3s cubic-bezier(.2,.8,.2,1);transform:rotate(' + (open ? 180 : 0) + 'deg);',
+        toggle: () => set({ focusId: open ? '' : f.id })
+      };
+    });
+
+    /* ---------- product knowledge ---------- */
+    const ND = 'Tidak dicantumkan';
+    const F = (l, v) => ({ l, v });
+    const catColor = { 'Tabungan': '#0B4DA2', 'Deposito & Giro': '#067647', 'Kredit': '#B54708', 'Layanan': '#6941C6' };
+    const catBg = { 'Tabungan': '#EAF1FC', 'Deposito & Giro': '#E6F6EE', 'Kredit': '#FEF0C7', 'Layanan': '#F1EBFC' };
+    const bunga0 = '0,00% – 0,40% p.a. berjenjang';
+
+    const focusProducts = focusData.map((f) => ({
+      id: 'f-' + f.id, name: f.name, cat: 'Tabungan', tag: f.tag, demo: true,
+      summary: f.def, def: f.def,
+      facts: [F('Setoran awal minimum', f.min), F('Suku bunga', f.rate), F('Sasaran', f.target)],
+      feats: [], target: f.target, color: f.color
+    }));
+
+    const catalog = [
+      { id: 'rupiah', name: 'Mandiri Tabungan Rupiah', cat: 'Tabungan', tag: 'Tabungan Rupiah',
+        summary: 'Tabungan harian rupiah dengan kartu debit dan Livin’',
+        def: 'Tabungan rupiah untuk transaksi sehari-hari yang sederhana dan nyaman.',
+        facts: [F('Setoran awal', 'Rp500.000'), F('Saldo minimum', 'Rp100.000'), F('Biaya admin', 'Rp12.500 / bulan'), F('Suku bunga', bunga0)],
+        feats: ['Kartu debit Visa', 'Autodebet', 'Transfer berkala (AFT)', 'Livin’poin', 'Dijamin LPS'], target: 'Nasabah umum' },
+      { id: 'tabunganmu', name: 'Mandiri TabunganMU', cat: 'Tabungan', tag: 'Tabungan Rupiah',
+        summary: 'Setoran awal rendah, bisa dibuka online',
+        def: 'Tabungan rupiah dengan setoran awal rendah dan biaya terjangkau untuk semua kalangan penghasilan.',
+        facts: [F('Setoran awal', 'Rp50.000'), F('Saldo minimum', 'Rp1.000.000'), F('Biaya admin', 'Rp5.000 / bulan'), F('Denda saldo di bawah minimum', 'Rp5.000')],
+        feats: ['Buka rekening online', 'E-statement bulanan', 'Livin’ by Mandiri', 'Undian Jempolan', 'Asuransi tempat usaha'], target: 'Semua kalangan, pelaku usaha kecil' },
+      { id: 'now', name: 'Mandiri Tabungan NOW', cat: 'Tabungan', tag: 'Tabungan Rupiah',
+        summary: 'Tabungan rupiah dengan biaya admin ringan',
+        def: 'Tabungan rupiah dengan saldo minimum dan biaya administrasi rendah untuk transaksi harian.',
+        facts: [F('Setoran awal', ND), F('Saldo minimum', 'Rp25.000'), F('Biaya admin', 'Rp5.000 / bulan'), F('Suku bunga', bunga0)],
+        feats: ['Kartu debit', 'Livin’ by Mandiri'], target: 'Nasabah umum' },
+      { id: 'payroll', name: 'Mandiri Tabungan Payroll', cat: 'Tabungan', tag: 'Tabungan Rupiah',
+        summary: 'Rekening penerima gaji perusahaan mitra',
+        def: 'Tabungan rupiah untuk karyawan perusahaan mitra yang menerima gaji melalui Bank Mandiri.',
+        facts: [F('Setoran awal', ND), F('Saldo minimum', 'Rp10.000'), F('Suku bunga', bunga0)],
+        feats: ['Gaji otomatis masuk rekening', 'Kartu debit', 'Livin’ by Mandiri'], target: 'Karyawan perusahaan mitra payroll' },
+      { id: 'bisnis', name: 'Mandiri Tabungan Bisnis', cat: 'Tabungan', tag: 'Rupiah & Valas',
+        summary: 'Simpanan bisnis dalam rupiah dan 13 mata uang',
+        def: 'Simpanan dalam rupiah dan valuta asing untuk perorangan maupun badan usaha.',
+        facts: [F('Setoran awal', 'Rp1.000.000 (valas mulai USD 100)'), F('Saldo minimum', 'Rp10.000 harian, Rp10 juta akhir bulan'), F('Biaya admin', 'Rp13.000 / bulan'), F('Suku bunga', 'Perorangan 0,00% – 0,40%, badan usaha hingga 0,80% p.a.')],
+        feats: ['13 mata uang', 'Sweep dan autodebet', 'Rekening gabungan (OR)', 'Kopra dan Livin’', 'Kartu debit bisnis'], target: 'Pelaku usaha dan badan usaha' },
+      { id: 'mtr', name: 'Mandiri Tabungan Rencana', cat: 'Tabungan', tag: 'Tabungan Berjangka',
+        summary: 'Menabung rutin otomatis dengan bunga berjenjang tenor',
+        def: 'Tabungan rencana yang mendebet rekening Mandiri Tabungan atau Giro setiap bulan agar menabung konsisten.',
+        facts: [F('Setoran bulanan minimum', 'Rp100.000 atau USD 10'), F('Tenor', '1 – 20 tahun'), F('Biaya admin', 'Bebas'), F('Suku bunga', '0,90% (1–3 th) hingga 1,65% (≥15 th) p.a.')],
+        feats: ['Debet otomatis', 'Boleh top-up', 'Asuransi gratis hingga Rp5 juta', 'Tanpa pemeriksaan medis', 'Rupiah dan USD'], target: 'Usia 18 – 70 tahun saat jatuh tempo' },
+      { id: 'emas', name: 'Mandiri Tabungan Emas', cat: 'Tabungan', tag: 'Tabungan Emas',
+        summary: 'Beli dan jual emas gramasi lewat Livin’',
+        def: 'Simpanan dalam bentuk gramasi emas yang dicatat di sistem Bank, dibeli dan dijual lewat Livin’ by Mandiri.',
+        facts: [F('Setoran awal', 'Setara 0,02 gram emas'), F('Pembelian berikutnya', 'Minimal 0,005 gram'), F('Biaya layanan', 'Rp2.500 / bulan'), F('Suku bunga', 'Tidak ada')],
+        feats: ['Jual-beli 24 jam', 'Cetak emas fisik mulai 1 gram', 'Mandiri ATM Emas', 'Tidak dijamin LPS'], target: 'Nasabah perorangan pengguna Livin’' },
+      { id: 'valas', name: 'Mandiri Tabungan Valas', cat: 'Tabungan', tag: 'Valuta Asing',
+        summary: 'Tabungan USD, SGD, EUR dan mata uang lain',
+        def: 'Tabungan mata uang asing untuk kebutuhan transaksi global, perjalanan, dan pendidikan.',
+        facts: [F('Setoran awal', ND), F('Suku bunga USD', '0,00% – 0,20% p.a.'), F('Suku bunga SGD', '0,00% – 0,50% p.a.')],
+        feats: ['Multicurrency (USD, SGD, EUR, GBP, AUD, dll.)', 'Livin’ by Mandiri'], target: 'Pelajar luar negeri, traveler, eksportir' },
+      { id: 'deposito', name: 'Mandiri Deposito Rupiah', cat: 'Deposito & Giro', tag: 'Deposito',
+        summary: 'Deposito berjangka rupiah tenor 1 – 24 bulan',
+        def: 'Simpanan berjangka dalam rupiah dengan suku bunga menarik dan beragam manfaat.',
+        facts: [F('Tenor', '1, 3, 6, 12, 24 bulan'), F('Suku bunga', '2,25% – 2,50% p.a.'), F('Penempatan minimum', ND)],
+        feats: ['Perpanjang otomatis (ARO)', 'Bunga di muka', 'Bunga ke tabungan atau giro', 'Rekening gabungan', 'e-Bilyet via Kopra'], target: 'Nasabah dengan dana mengendap' },
+      { id: 'depousd', name: 'Mandiri Deposito USD', cat: 'Deposito & Giro', tag: 'Deposito Valas',
+        summary: 'Deposito dolar AS tenor 1 – 12 bulan',
+        def: 'Deposito berjangka dalam dolar AS untuk menempatkan dana valas.',
+        facts: [F('Tenor', '1, 3, 6, 12 bulan'), F('Suku bunga', '4,00% p.a. semua tier'), F('Penempatan minimum', ND)],
+        feats: ['Bunga bulanan atau di muka'], target: 'Nasabah dengan dana valas' },
+      { id: 'giro', name: 'Mandiri Giro Rupiah', cat: 'Deposito & Giro', tag: 'Giro',
+        summary: 'Rekening operasional usaha dengan bunga berjenjang',
+        def: 'Rekening giro rupiah untuk kebutuhan operasional dan transaksi usaha.',
+        facts: [F('Setoran awal', ND), F('Suku bunga', '0,00% – 0,75% p.a. berjenjang'), F('Bunga tertinggi', 'Saldo ≥ Rp1 miliar')],
+        feats: ['Cek dan bilyet giro', 'Kopra by Mandiri'], target: 'Perusahaan dan pelaku usaha' },
+      { id: 'multiguna', name: 'Mandiri Kredit Multiguna', cat: 'Kredit', tag: 'Kredit Konsumtif',
+        summary: 'Kredit berjaminan properti untuk berbagai kebutuhan',
+        def: 'Kredit konsumtif dengan jaminan properti (rumah, ruko, rukan, apartemen) untuk beragam keperluan, termasuk take over dan top up.',
+        facts: [F('Plafon', 'Hingga Rp10 miliar (karyawan), Rp200 juta (wirausaha)'), F('Tenor', '15 th karyawan, 10 th profesional, 7 th wirausaha'), F('Suku bunga', 'Mulai 6,00% fixed 3 tahun pertama'), F('Penghasilan minimum', 'Rp5 juta / bulan')],
+        feats: ['Usia minimal 21 tahun', 'Jaminan SHM, SHGB, atau SHMSRS', 'Take over dan top up'], target: 'Karyawan, profesional, wirausaha' },
+      { id: 'sbdk', name: 'Suku Bunga Dasar Kredit (SBDK)', cat: 'Kredit', tag: 'Referensi Bunga Kredit',
+        summary: 'Acuan suku bunga dasar kredit per segmen',
+        def: 'Suku bunga dasar yang menjadi acuan penetapan bunga kredit, per 31 Agustus 2026.',
+        facts: [F('KPR', '12,10% p.a.'), F('Non-KPR', '11,60% p.a.'), F('Mikro', '12,75% p.a.'), F('Korporasi', '8,35% p.a.')],
+        feats: [], target: 'Acuan internal untuk penawaran kredit' },
+      { id: 'prioritas', name: 'Mandiri Prioritas', cat: 'Layanan', tag: 'Layanan Nasabah Prioritas',
+        summary: 'Layanan eksklusif untuk nasabah dana minimal Rp1 miliar',
+        def: 'Layanan untuk nasabah perorangan dengan total penempatan dana ekuivalen minimal Rp1 miliar.',
+        facts: [F('Dana minimum', 'Rp1 miliar'), F('Status drop fund', 'Saldo < Rp950 juta lebih dari 3 bulan'), F('Denda drop fund', 'Rp250.000 / bulan, maks. 3 bulan'), F('Syarat rekening', 'Mandiri Tabungan atau Giro Rupiah perorangan')],
+        feats: ['Relationship manager', 'Akses lounge bandara', 'Safe deposit box', 'Wealth advisory', 'Bebas iuran tahunan kartu kredit'], target: 'Nasabah perorangan dengan dana besar' },
+      { id: 'merchant', name: 'Livin’ Usaha (Livin’ Merchant)', cat: 'Layanan', tag: 'QRIS Merchant',
+        summary: 'Terima pembayaran QRIS dari semua aplikasi',
+        def: 'Layanan web untuk pedagang menerima pembayaran QRIS dari seluruh e-wallet dan aplikasi pembayaran, dengan dasbor transaksi.',
+        facts: [F('Limit per transaksi', 'Rp10 juta'), F('Settlement', '3 kali sehari: 08.00, 16.00, 20.00 WIB'), F('Biaya admin', 'Tidak ada'), F('Persetujuan', 'Hingga 7 hari kerja')],
+        feats: ['Tanpa unduh aplikasi', 'Multi-perangkat', 'Notifikasi real-time', 'Riwayat hingga 3 bulan', 'Akun Standar: pencairan Rp5 juta / hari'], target: 'Usaha perorangan nasabah Mandiri' }
+    ];
+
+    const matchQ = (p) => {
+      const q = s.prodQ.trim().toLowerCase();
+      if (q === '') return true;
+      const hay = (p.name + ' ' + p.tag + ' ' + p.def + ' ' + p.facts.map((x) => x.l + ' ' + x.v).join(' ') + ' ' + (p.feats || []).join(' ')).toLowerCase();
+      return hay.indexOf(q) !== -1;
+    };
+    const matchC = (p) => s.prodCat === 'Semua' || p.cat === s.prodCat;
+    const mkProd = (p, isFocusCard) => {
+      const open = s.prodOpen === p.id;
+      const col = p.color || catColor[p.cat];
+      const label = p.name.replace('Mandiri ', '').replace('Livin’ ', 'L ');
+      return {
+        id: p.id, name: p.name, tag: p.tag, summary: p.summary, def: p.def, target: p.target, demo: !!p.demo,
+        initial: label.charAt(0),
+        facts: p.facts, feats: (p.feats || []).map((t) => ({ t })), hasFeats: (p.feats || []).length > 0,
+        open, ariaOpen: open ? 'true' : 'false',
+        badgeStyle: 'width:42px;height:42px;border-radius:12px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#FFFFFF;background:' + col + ';',
+        catStyle: 'font-size:11px;font-weight:700;border-radius:999px;padding:4px 10px;color:' + col + ';background:' + (catBg[p.cat] || '#EAF1FC') + ';',
+        cardStyle: 'flex:1 1 340px;min-width:0;border-radius:16px;overflow:hidden;transition:background-color .25s ease,border-color .25s ease,box-shadow .25s ease,transform .22s ease;' + (open ? 'background:#FFFFFF;border:1px solid #BBD3F2;box-shadow:0 6px 18px rgba(11,77,162,.10);' : 'background:#FFFFFF;border:1px solid #E4E9F2;box-shadow:0 1px 2px rgba(16,24,40,.05);'),
+        chevStyle: 'flex:0 0 auto;transition:transform .3s cubic-bezier(.2,.8,.2,1);transform:rotate(' + (open ? 180 : 0) + 'deg);',
+        toggle: () => set({ prodOpen: open ? '' : p.id })
+      };
+    };
+    const focusCards = focusProducts.filter((p) => matchC(p) && matchQ(p)).map((p) => mkProd(p, true));
+    const prodList = catalog.filter((p) => matchC(p) && matchQ(p)).map((p) => mkProd(p, false));
+    const prodCatChips = ['Semua', 'Tabungan', 'Deposito & Giro', 'Kredit', 'Layanan'].map((c) => ({ label: c, style: chip(s.prodCat === c), pick: () => set({ prodCat: c }) }));
+
+    return {
+      predRows, predSortChips, predStatusChips,
+      predOk: predCount[0], predWarn: predCount[1], predRisk: predCount[2],
+      predTotal: people.length,
+      predEmpty: predRows.length === 0,
+      branchProj, branchProjPct: Math.round((branchProj / totalTar) * 100),
+      isProd: s.view === 'prod',
+      goProd: () => set({ view: 'prod' }),
+      navProdStyle: nav(s.view === 'prod'),
+      prodQ: s.prodQ,
+      onProdQ: (e) => set({ prodQ: e.target.value }),
+      prodCatChips, focusCards, prodList,
+      hasFocus: focusCards.length > 0,
+      focusCardCount: focusCards.length,
+      prodListCount: prodList.length,
+      prodEmpty: prodList.length === 0 && focusCards.length === 0,
+      focusOpen: s.focusOpen,
+      focusClosed: !s.focusOpen,
+      closeFocus: () => set({ focusOpen: false }),
+      openFocus: () => set({ focusOpen: true }),
+      focusItems,
+      isTask: s.view === 'task',
+      isDash: s.view === 'dash',
+      goTask: () => set({ view: 'task' }),
+      goDash: () => set({ view: 'dash' }),
+      navTaskStyle: nav(s.view === 'task'),
+      navDashStyle: nav(s.view === 'dash'),
+      hasOverdue: overdueAll.length > 0,
+      overdueCount: overdueAll.length,
+
+      q: s.q,
+      onQ: (e) => set({ q: e.target.value }),
+      showForm: s.showForm,
+      toggleForm: () => set({ showForm: !s.showForm, formMsg: '' }),
+      kpiToday: todayAll.length,
+      kpiDone: doneToday.length,
+      kpiOverdue: overdueAll.length,
+      kpiRate: rate,
+      reviewText, reviewStyle, reviewIconStyle,
+      hasUnfinished: unfinishedToday.length > 0,
+      carryAll: () => set({ tasks: s.tasks.map((x) => (x.due === 0 && !x.done) ? { ...x, due: 1 } : x) }),
+
+      newTitle: s.newTitle,
+      onTitle: (e) => set({ newTitle: e.target.value, formMsg: '' }),
+      newPrioChips, newDueChips, newWhoChips,
+      hasFormMsg: s.formMsg !== '',
+      formMsg: s.formMsg,
+      addTask: () => {
+        const title = s.newTitle.trim();
+        if (!title) { set({ formMsg: 'Nama tugas wajib diisi' }); return; }
+        const t = { id: this.nextId++, title, ctx: 'Tugas manual', prio: s.newPrio, due: s.newDue, time: '', done: false, who: s.newWho };
+        set({ tasks: [t].concat(s.tasks), newTitle: '', formMsg: '', showForm: false });
+      },
+      prioChips, cols,
+
+      totalAct, totalTar, totalPct, pacePct, belowPace,
+      remaining: totalTar - totalAct,
+      ringDash: ((Math.min(totalPct, 100) / 100) * 402.12).toFixed(1),
+      chart, prods, roleChips, podium, rest, hasRest: rest.length > 0,
+
+      recMemberChips, recProdChips,
+      hasToast: s.toast !== '',
+      toast: s.toast,
+      record: () => {
+        const m = s.members.find((x) => x.id === s.recMember);
+        const pn = prodNames.find((x) => x[0] === s.recProd);
+        const j = PN.indexOf(s.recProd);
+        const members = s.members.map((x) => x.id === s.recMember ? { ...x, v: x.v.map((n, k) => k === j ? n + 1 : n) } : x);
+        set({ members, toast: '+1 ' + pn[1] + ' · ' + m.name });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
